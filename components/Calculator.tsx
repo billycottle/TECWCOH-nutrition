@@ -18,7 +18,6 @@ export default function Calculator() {
   const [age, setAge] = useState<string>('');
   const [gender, setGender] = useState<Gender>('male');
   const [activityLevel, setActivityLevel] = useState<ActivityLevel>('moderate');
-  const [customMultiplier, setCustomMultiplier] = useState<string>('');
 
   // Metric inputs
   const [weightKg, setWeightKg] = useState<string>('');
@@ -57,7 +56,6 @@ export default function Calculator() {
       height: heightInCm,
       gender,
       activityLevel,
-      customActivityMultiplier: activityLevel === 'custom' ? Number(customMultiplier) : undefined,
     };
 
     const calculated = calculateCalories(inputs);
@@ -325,13 +323,13 @@ export default function Calculator() {
     <div style={styles.container}>
       <div style={styles.header}>
         <h1 style={styles.h1}>Daily Calorie Calculator</h1>
-        <p style={styles.subtitle}>Calculate your daily calorie needs using the Harris-Benedict equation</p>
+        <p style={styles.subtitle}>Find out how many calories your body burns each day</p>
       </div>
 
       <form onSubmit={handleCalculate} style={styles.form}>
         {/* Unit System Toggle */}
         <div style={styles.fieldContainer}>
-          <label style={styles.label}>Unit System</label>
+          <label style={styles.label}>Measurement System</label>
           <div style={styles.radioGroup}>
             <label style={styles.radioLabel}>
               <input
@@ -342,7 +340,7 @@ export default function Calculator() {
                 onChange={(e) => setUnitSystem(e.target.value as UnitSystem)}
                 style={styles.radio}
               />
-              <span style={styles.radioText}>Imperial (lbs, ft/in)</span>
+              <span style={styles.radioText}>US (pounds, feet/inches)</span>
             </label>
             <label style={styles.radioLabel}>
               <input
@@ -353,7 +351,7 @@ export default function Calculator() {
                 onChange={(e) => setUnitSystem(e.target.value as UnitSystem)}
                 style={styles.radio}
               />
-              <span style={styles.radioText}>Metric (kg, cm)</span>
+              <span style={styles.radioText}>Metric (kilograms, centimeters)</span>
             </label>
           </div>
         </div>
@@ -366,23 +364,23 @@ export default function Calculator() {
               <input
                 type="radio"
                 name="gender"
-                value="male"
-                checked={gender === 'male'}
-                onChange={(e) => setGender(e.target.value as Gender)}
-                style={styles.radio}
-              />
-              <span style={styles.radioText}>Male</span>
-            </label>
-            <label style={styles.radioLabel}>
-              <input
-                type="radio"
-                name="gender"
                 value="female"
                 checked={gender === 'female'}
                 onChange={(e) => setGender(e.target.value as Gender)}
                 style={styles.radio}
               />
               <span style={styles.radioText}>Female</span>
+            </label>
+            <label style={styles.radioLabel}>
+              <input
+                type="radio"
+                name="gender"
+                value="male"
+                checked={gender === 'male'}
+                onChange={(e) => setGender(e.target.value as Gender)}
+                style={styles.radio}
+              />
+              <span style={styles.radioText}>Male</span>
             </label>
           </div>
         </div>
@@ -398,7 +396,7 @@ export default function Calculator() {
             required
             min="1"
             max="120"
-            placeholder="25"
+            placeholder="55"
             style={styles.input}
             onFocus={(e) => {
               e.target.style.borderColor = '#2BA5FF';
@@ -421,7 +419,7 @@ export default function Calculator() {
               required
               min="1"
               step="0.1"
-              placeholder="154"
+              placeholder="180"
               style={styles.input}
               onFocus={(e) => {
                 e.target.style.borderColor = '#007aff';
@@ -444,7 +442,7 @@ export default function Calculator() {
               required
               min="1"
               step="0.1"
-              placeholder="70"
+              placeholder="82"
               style={styles.input}
               onFocus={(e) => {
                 e.target.style.borderColor = '#007aff';
@@ -494,7 +492,7 @@ export default function Calculator() {
                   required
                   min="0"
                   max="11"
-                  placeholder="9"
+                  placeholder="6"
                   style={styles.input}
                   onFocus={(e) => {
                     e.target.style.borderColor = '#007aff';
@@ -520,7 +518,7 @@ export default function Calculator() {
               required
               min="1"
               max="300"
-              placeholder="175"
+              placeholder="168"
               style={styles.input}
               onFocus={(e) => {
                 e.target.style.borderColor = '#007aff';
@@ -549,44 +547,13 @@ export default function Calculator() {
               e.target.style.borderColor = '#383838';
             }}
           >
-            <option value="sedentary">Sedentary (little or no exercise, desk job) - 1.2</option>
-            <option value="light">Lightly Active (light exercise/sports 1-3 d/wk) - 1.375</option>
-            <option value="moderate">Moderately Active (moderate exercise/sports 3-5 d/wk) - 1.55</option>
-            <option value="very_active">Very Active (hard exercise/sports 6-7 d/wk) - 1.725</option>
-            <option value="extremely_active">Extremely Active (hard daily exercise/sports & physical job or 2X day training) - 1.9</option>
-            <option value="custom">Custom (enter your own multiplier)</option>
+            <option value="sedentary">Sedentary - Desk job, little exercise</option>
+            <option value="light">Lightly Active - Light exercise 1-3 days/week</option>
+            <option value="moderate">Moderately Active - Exercise 3-5 days/week</option>
+            <option value="very_active">Very Active - Exercise 6-7 days/week</option>
+            <option value="extremely_active">Extremely Active - Intense daily exercise plus physical job</option>
           </select>
         </div>
-
-        {/* Custom Activity Multiplier */}
-        {activityLevel === 'custom' && (
-          <div style={styles.fieldContainer}>
-            <label htmlFor="custom-multiplier" style={styles.label}>Custom Activity Multiplier</label>
-            <input
-              id="custom-multiplier"
-              type="number"
-              value={customMultiplier}
-              onChange={(e) => setCustomMultiplier(e.target.value)}
-              required
-              min="1"
-              max="3"
-              step="0.01"
-              placeholder="1.5"
-              style={styles.input}
-              onFocus={(e) => {
-                e.target.style.borderColor = '#007aff';
-                e.target.style.boxShadow = '0 0 0 3px rgba(0, 122, 255, 0.1)';
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = 'rgb(209, 213, 219)';
-                e.target.style.boxShadow = 'none';
-              }}
-            />
-            <p style={styles.helperText}>
-              Enter a number between 1.0 and 3.0 (e.g., 1.5 for activity between Lightly and Moderately Active)
-            </p>
-          </div>
-        )}
 
         {/* Submit Button */}
         <button
@@ -599,7 +566,7 @@ export default function Calculator() {
             e.currentTarget.style.background = '#383838';
           }}
         >
-          Calculate TDEE
+          Calculate My Daily Calories
         </button>
       </form>
 
@@ -607,30 +574,34 @@ export default function Calculator() {
       {results && (
         <div style={styles.resultsSection}>
           <div style={styles.resultBox}>
-            <h2 style={styles.h2}>Step 1: Your Maintenance Calories</h2>
+            <h2 style={styles.h2}>Your Daily Calorie Burn</h2>
 
             <div style={styles.resultRow}>
-              <span style={styles.resultLabel}>BMR (Basal Metabolic Rate):</span>
+              <span style={styles.resultLabel}>Resting Calories (no activity):</span>
               <span style={styles.resultValue}>{results.bmr.toLocaleString()} cal/day</span>
             </div>
 
             <div style={styles.resultRow}>
-              <span style={styles.resultLabel}>TDEE (Total Daily Energy Expenditure):</span>
+              <span style={styles.resultLabel}>Total Daily Calories Burned:</span>
               <span style={styles.resultValue}>{results.tdee.toLocaleString()} cal/day</span>
             </div>
 
             <p style={styles.resultDescription}>
-              Your TDEE is the number of calories you burn per day including your activity level. Numbers rounded to the nearest 50 for simplicity.
+              This is how many calories your body burns each day, including your exercise and activity. Rounded to the nearest 50 for simplicity.
             </p>
           </div>
 
           {/* Step 2: Deficit Selection */}
           <div style={styles.deficitBox}>
-            <h2 style={styles.h2}>Step 2: Calculate your Daily Calorie Target</h2>
+            <h2 style={styles.h2}>Step 2: Choose Your Calorie Deficit</h2>
 
-            <div style={{ ...styles.form, gap: '16px' }}>
+            <p style={styles.resultDescription}>
+              The larger the calorie deficit, the faster you'll lose weight. The catch? You'll feel hungrier and risk losing muscle along with fat. Start with one option and adjust based on comfort and results.
+            </p>
+
+            <div style={{ ...styles.form, gap: '16px', marginTop: '24px' }}>
               <div style={styles.fieldContainer}>
-                <label htmlFor="deficit" style={styles.label}>Select Your Deficit</label>
+                <label htmlFor="deficit" style={styles.label}>Pick a Calorie Deficit</label>
                 <select
                   id="deficit"
                   value={selectedDeficit}
@@ -645,11 +616,11 @@ export default function Calculator() {
                     e.target.style.boxShadow = 'none';
                   }}
                 >
-                  <option value="none">Select a deficit...</option>
-                  <option value="15">15% - Very Conservative Deficit</option>
-                  <option value="20">20% - Conservative Deficit</option>
-                  <option value="25">25% - Moderate Deficit</option>
-                  <option value="30">30% - Aggressive Deficit</option>
+                  <option value="none">Choose an option...</option>
+                  <option value="15">Light (15% reduction)</option>
+                  <option value="20">Moderate (20% reduction)</option>
+                  <option value="25">Significant (25% reduction)</option>
+                  <option value="30">Aggressive (30% reduction)</option>
                 </select>
               </div>
 
@@ -657,10 +628,10 @@ export default function Calculator() {
                 <>
                   <div style={styles.deficitDescription}>
                     <p style={{ fontSize: '13px', color: 'rgb(55, 65, 81)', lineHeight: 1.5 }}>
-                      {selectedDeficit === '15' && 'Slow weight loss, but good for maximum muscle retention'}
-                      {selectedDeficit === '20' && 'Slow to moderate weight loss; good for people with slightly high body fat and not in a big hurry to reach goal'}
-                      {selectedDeficit === '25' && 'Moderate to quick rate of fat loss; good for people with high body fat who want brisk results but without high risk or discomfort'}
-                      {selectedDeficit === '30' && 'Faster weight loss; good for very overweight people or anyone on a deadline. Hunger or minor risks possible, but still safe'}
+                      {selectedDeficit === '15' && 'Slow burn, great for preserving muscle while burning fat'}
+                      {selectedDeficit === '20' && "You want to see results faster, but don't want to be too hungry. If you have moderate body fat and want a sustainable plan, this is it."}
+                      {selectedDeficit === '25' && 'If you have high body fat, but want fast results without the extreme discomfort of an aggressive deficit, choose this one'}
+                      {selectedDeficit === '30' && "Faster results. Best if you have a deadline or significant body fat to lose. You'll feel hungry, but it's still safe."}
                     </p>
                   </div>
 
@@ -675,7 +646,7 @@ export default function Calculator() {
                       e.currentTarget.style.background = '#383838';
                     }}
                   >
-                    Calculate Target Calories
+                    Calculate My Calorie Target
                   </button>
                 </>
               )}
@@ -684,10 +655,10 @@ export default function Calculator() {
             {/* Deficit Results */}
             {deficitCalories && (
               <div style={styles.deficitResultBox}>
-                <h3 style={styles.h3}>Your Weight Loss Target</h3>
+                <h3 style={styles.h3}>Your Daily Calorie Target</h3>
 
                 <div style={styles.resultRow}>
-                  <span style={styles.resultLabel}>Target Calories ({selectedDeficit}% deficit):</span>
+                  <span style={styles.resultLabel}>Eat This Many Calories:</span>
                   <span style={styles.resultValue}>{deficitCalories.toLocaleString()} cal/day</span>
                 </div>
 
@@ -695,15 +666,14 @@ export default function Calculator() {
                   const fatLossRate = Math.round((((results.tdee - deficitCalories) * 7) / 3500) * 10) / 10;
                   return (
                     <div style={styles.resultRow}>
-                      <span style={styles.resultLabel}>Fat Loss Rate:</span>
+                      <span style={styles.resultLabel}>Expected Weight Loss Per Week:</span>
                       <span style={styles.resultValue}>{fatLossRate} lbs/week</span>
                     </div>
                   );
                 })()}
 
                 <p style={styles.resultDescription}>
-                  Eat this amount daily to achieve your weight loss goal. Your TDEE is {results.tdee.toLocaleString()} cal/day (what you burn),
-                  and your target is {deficitCalories.toLocaleString()} cal/day (what you should eat).
+                  Eat this amount each day to lose weight. You burn {results.tdee.toLocaleString()} calories per day and should eat {deficitCalories.toLocaleString()} calories per day. A {selectedDeficit}% calorie deficit.
                 </p>
               </div>
             )}
@@ -712,10 +682,10 @@ export default function Calculator() {
           {/* Step 3: Flexibility */}
           {deficitCalories && (
             <div style={styles.deficitBox}>
-              <h2 style={styles.h2}>Step 3: Give yourself some Flexibility</h2>
+              <h2 style={styles.h2}>Step 3: Make It Work for Your Life</h2>
 
               <p style={styles.resultDescription}>
-                The key for a sustainable eating plan, is being flexible. Instead of targeting a daily calorie deficit, target a weekly calorie deficit. Eat less on certain days, to eat more on other, for example the weekends.
+                Don't want to eat the same amount every day? You don't have to. Think about your week as a whole. Eat a bit less on weekdays so you can enjoy more on weekends.
               </p>
 
               <div style={{ marginTop: '24px' }}>
@@ -725,11 +695,11 @@ export default function Calculator() {
                   return (
                     <>
                       <div style={styles.resultRow}>
-                        <span style={styles.resultLabel}>Weekly Calorie Deficit:</span>
+                        <span style={styles.resultLabel}>Weekly Calorie Reduction:</span>
                         <span style={styles.resultValue}>{weeklyDeficit.toLocaleString()} cal/week</span>
                       </div>
                       <div style={styles.resultRow}>
-                        <span style={styles.resultLabel}>Weekly Calorie Intake:</span>
+                        <span style={styles.resultLabel}>Total Weekly Calories to Eat:</span>
                         <span style={styles.resultValue}>{weeklyIntake.toLocaleString()} cal/week</span>
                       </div>
                     </>
@@ -742,7 +712,7 @@ export default function Calculator() {
                 <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
                   {/* Linear Table */}
                   <div style={{ flex: '1', minWidth: '280px' }}>
-                    <h3 style={{ ...styles.h3, fontSize: '16px', marginBottom: '16px' }}>Linear Weekly Calorie Intake</h3>
+                    <h3 style={{ ...styles.h3, fontSize: '16px', marginBottom: '16px' }}>Same Amount Every Day</h3>
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: "'Inter', Arial, sans-serif", fontSize: '13px' }}>
                       <thead>
                         <tr style={{ borderBottom: '2px solid #383838' }}>
@@ -758,7 +728,7 @@ export default function Calculator() {
                           </tr>
                         ))}
                         <tr style={{ borderTop: '2px solid #383838', fontWeight: 600 }}>
-                          <td style={{ padding: '8px', color: '#383838' }}>Total calories</td>
+                          <td style={{ padding: '8px', color: '#383838' }}>Weekly Total</td>
                           <td style={{ textAlign: 'right', padding: '8px', fontFamily: "'Aeonik Mono', sans-serif", color: '#383838' }}>{(deficitCalories * 7).toLocaleString()}</td>
                         </tr>
                       </tbody>
@@ -767,7 +737,7 @@ export default function Calculator() {
 
                   {/* Flexible Table */}
                   <div style={{ flex: '1', minWidth: '280px' }}>
-                    <h3 style={{ ...styles.h3, fontSize: '16px', marginBottom: '16px' }}>Flexible Weekly Calorie Intake</h3>
+                    <h3 style={{ ...styles.h3, fontSize: '16px', marginBottom: '16px' }}>Flexible Plan (Eat Less Weekdays, More Weekends)</h3>
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: "'Inter', Arial, sans-serif", fontSize: '13px' }}>
                       <thead>
                         <tr style={{ borderBottom: '2px solid #383838' }}>
@@ -791,7 +761,7 @@ export default function Calculator() {
                           </tr>
                         ))}
                         <tr style={{ borderTop: '2px solid #383838', fontWeight: 600 }}>
-                          <td style={{ padding: '8px', color: '#383838' }}>Total calories</td>
+                          <td style={{ padding: '8px', color: '#383838' }}>Weekly Total</td>
                           <td style={{ textAlign: 'right', padding: '8px', fontFamily: "'Aeonik Mono', sans-serif", color: '#383838' }}>{(deficitCalories * 7).toLocaleString()}</td>
                         </tr>
                       </tbody>
