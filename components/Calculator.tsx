@@ -61,7 +61,12 @@ export default function Calculator() {
     };
 
     const calculated = calculateCalories(inputs);
-    setResults(calculated);
+    // Round BMR and TDEE to nearest 50 for simplicity
+    const roundedResults = {
+      bmr: Math.round(calculated.bmr / 50) * 50,
+      tdee: Math.round(calculated.tdee / 50) * 50,
+    };
+    setResults(roundedResults);
 
     setSelectedDeficit('none');
     setDeficitCalories(null);
@@ -70,8 +75,10 @@ export default function Calculator() {
   const handleCalculateDeficit = () => {
     if (results && selectedDeficit !== 'none') {
       const deficit = Number(selectedDeficit) / 100;
-      const target = Math.round(results.tdee * (1 - deficit));
-      setDeficitCalories(target);
+      const target = results.tdee * (1 - deficit);
+      // Round to nearest 50 for simplicity
+      const roundedTarget = Math.round(target / 50) * 50;
+      setDeficitCalories(roundedTarget);
     }
   };
 
@@ -613,13 +620,13 @@ export default function Calculator() {
             </div>
 
             <p style={styles.resultDescription}>
-              Your TDEE is the number of calories you burn per day including your activity level.
+              Your TDEE is the number of calories you burn per day including your activity level. Numbers rounded to the nearest 50 for simplicity.
             </p>
           </div>
 
           {/* Step 2: Deficit Selection */}
           <div style={styles.deficitBox}>
-            <h2 style={styles.h2}>Step 2: Calculate Weight Loss Target (Optional)</h2>
+            <h2 style={styles.h2}>Step 2: Calculate your Daily Calorie Target</h2>
 
             <div style={{ ...styles.form, gap: '16px' }}>
               <div style={styles.fieldContainer}>
@@ -678,19 +685,122 @@ export default function Calculator() {
             {deficitCalories && (
               <div style={styles.deficitResultBox}>
                 <h3 style={styles.h3}>Your Weight Loss Target</h3>
-                <div style={{ ...styles.resultRow, marginBottom: '12px' }}>
-                  <span style={{ fontSize: '14px', fontWeight: 600, color: 'rgb(55, 65, 81)' }}>
-                    Target Calories ({selectedDeficit}% deficit):
-                  </span>
-                  <span style={styles.targetValue}>{deficitCalories.toLocaleString()} cal/day</span>
+
+                <div style={styles.resultRow}>
+                  <span style={styles.resultLabel}>Target Calories ({selectedDeficit}% deficit):</span>
+                  <span style={styles.resultValue}>{deficitCalories.toLocaleString()} cal/day</span>
                 </div>
-                <p style={{ fontSize: '13px', color: 'rgb(107, 114, 128)', lineHeight: 1.5 }}>
+
+                {(() => {
+                  const fatLossRate = Math.round((((results.tdee - deficitCalories) * 7) / 3500) * 10) / 10;
+                  return (
+                    <div style={styles.resultRow}>
+                      <span style={styles.resultLabel}>Fat Loss Rate:</span>
+                      <span style={styles.resultValue}>{fatLossRate} lbs/week</span>
+                    </div>
+                  );
+                })()}
+
+                <p style={styles.resultDescription}>
                   Eat this amount daily to achieve your weight loss goal. Your TDEE is {results.tdee.toLocaleString()} cal/day (what you burn),
                   and your target is {deficitCalories.toLocaleString()} cal/day (what you should eat).
                 </p>
               </div>
             )}
           </div>
+
+          {/* Step 3: Flexibility */}
+          {deficitCalories && (
+            <div style={styles.deficitBox}>
+              <h2 style={styles.h2}>Step 3: Give yourself some Flexibility</h2>
+
+              <p style={styles.resultDescription}>
+                The key for a sustainable eating plan, is being flexible. Instead of targeting a daily calorie deficit, target a weekly calorie deficit. Eat less on certain days, to eat more on other, for example the weekends.
+              </p>
+
+              <div style={{ marginTop: '24px' }}>
+                {(() => {
+                  const weeklyDeficit = (results.tdee - deficitCalories) * 7;
+                  const weeklyIntake = deficitCalories * 7;
+                  return (
+                    <>
+                      <div style={styles.resultRow}>
+                        <span style={styles.resultLabel}>Weekly Calorie Deficit:</span>
+                        <span style={styles.resultValue}>{weeklyDeficit.toLocaleString()} cal/week</span>
+                      </div>
+                      <div style={styles.resultRow}>
+                        <span style={styles.resultLabel}>Weekly Calorie Intake:</span>
+                        <span style={styles.resultValue}>{weeklyIntake.toLocaleString()} cal/week</span>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+
+              {/* Tables Section */}
+              <div style={{ marginTop: '32px' }}>
+                <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
+                  {/* Linear Table */}
+                  <div style={{ flex: '1', minWidth: '280px' }}>
+                    <h3 style={{ ...styles.h3, fontSize: '16px', marginBottom: '16px' }}>Linear Weekly Calorie Intake</h3>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: "'Inter', Arial, sans-serif", fontSize: '13px' }}>
+                      <thead>
+                        <tr style={{ borderBottom: '2px solid #383838' }}>
+                          <th style={{ textAlign: 'left', padding: '8px', fontWeight: 600, color: '#383838' }}>Day</th>
+                          <th style={{ textAlign: 'right', padding: '8px', fontWeight: 600, color: '#383838' }}>Calories</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
+                          <tr key={day} style={{ borderBottom: '1px solid #383838' }}>
+                            <td style={{ padding: '8px', color: '#383838' }}>{day}</td>
+                            <td style={{ textAlign: 'right', padding: '8px', fontFamily: "'Aeonik Mono', sans-serif", color: '#383838' }}>{deficitCalories.toLocaleString()}</td>
+                          </tr>
+                        ))}
+                        <tr style={{ borderTop: '2px solid #383838', fontWeight: 600 }}>
+                          <td style={{ padding: '8px', color: '#383838' }}>Total calories</td>
+                          <td style={{ textAlign: 'right', padding: '8px', fontFamily: "'Aeonik Mono', sans-serif", color: '#383838' }}>{(deficitCalories * 7).toLocaleString()}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Flexible Table */}
+                  <div style={{ flex: '1', minWidth: '280px' }}>
+                    <h3 style={{ ...styles.h3, fontSize: '16px', marginBottom: '16px' }}>Flexible Weekly Calorie Intake</h3>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: "'Inter', Arial, sans-serif", fontSize: '13px' }}>
+                      <thead>
+                        <tr style={{ borderBottom: '2px solid #383838' }}>
+                          <th style={{ textAlign: 'left', padding: '8px', fontWeight: 600, color: '#383838' }}>Day</th>
+                          <th style={{ textAlign: 'right', padding: '8px', fontWeight: 600, color: '#383838' }}>Calories</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {[
+                          { day: 'Monday', cal: deficitCalories - 160 },
+                          { day: 'Tuesday', cal: deficitCalories - 160 },
+                          { day: 'Wednesday', cal: deficitCalories - 160 },
+                          { day: 'Thursday', cal: deficitCalories - 160 },
+                          { day: 'Friday', cal: deficitCalories + 400 },
+                          { day: 'Saturday', cal: deficitCalories + 400 },
+                          { day: 'Sunday', cal: deficitCalories - 160 },
+                        ].map(({ day, cal }) => (
+                          <tr key={day} style={{ borderBottom: '1px solid #383838' }}>
+                            <td style={{ padding: '8px', color: '#383838' }}>{day}</td>
+                            <td style={{ textAlign: 'right', padding: '8px', fontFamily: "'Aeonik Mono', sans-serif", color: '#383838' }}>{cal.toLocaleString()}</td>
+                          </tr>
+                        ))}
+                        <tr style={{ borderTop: '2px solid #383838', fontWeight: 600 }}>
+                          <td style={{ padding: '8px', color: '#383838' }}>Total calories</td>
+                          <td style={{ textAlign: 'right', padding: '8px', fontFamily: "'Aeonik Mono', sans-serif", color: '#383838' }}>{(deficitCalories * 7).toLocaleString()}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
