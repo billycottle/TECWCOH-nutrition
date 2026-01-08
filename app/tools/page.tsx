@@ -101,15 +101,15 @@ export default function ToolsPage() {
           <Link
             href="/"
             style={styles.link}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#2BA5FF';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = '#383838';
-            }}
+            className="cta-link"
           >
             Try the Calorie Calculator
           </Link>
+          <style jsx>{`
+            .cta-link:hover {
+              background: #2BA5FF !important;
+            }
+          `}</style>
         </div>
       </div>
     </div>

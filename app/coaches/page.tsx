@@ -153,15 +153,15 @@ export default function CoachesPage() {
           <a
             href="/"
             style={styles.ctaButton}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#2BA5FF';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = '#383838';
-            }}
+            className="cta-button"
           >
             Try the Calculator
           </a>
+          <style jsx>{`
+            .cta-button:hover {
+              background: #2BA5FF !important;
+            }
+          `}</style>
         </div>
       </div>
     </div>
