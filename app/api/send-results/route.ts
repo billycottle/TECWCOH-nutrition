@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { generatePDFBuffer, type PDFData } from '@/lib/generate-pdf-simple';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Initialize Resend client lazily to avoid build-time errors
+function getResendClient() {
+  return new Resend(process.env.RESEND_API_KEY);
+}
 
 // Rate limiting map (in production, use Redis or similar)
 const rateLimitMap = new Map<string, number[]>();
@@ -101,6 +104,7 @@ export async function POST(request: NextRequest) {
     const filename = `calorie-plan-${today}.pdf`;
 
     // Send email via Resend
+    const resend = getResendClient();
     const { data, error } = await resend.emails.send({
       from: 'Nutrition Tools <onboarding@resend.dev>', // Use your verified domain in production
       to: [email],
