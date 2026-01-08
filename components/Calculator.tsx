@@ -35,6 +35,12 @@ export default function Calculator() {
   const [selectedDeficit, setSelectedDeficit] = useState<string>('none');
   const [deficitCalories, setDeficitCalories] = useState<number | null>(null);
 
+  // Email capture for PDF delivery
+  const [email, setEmail] = useState<string>('');
+  const [emailSending, setEmailSending] = useState<boolean>(false);
+  const [emailSuccess, setEmailSuccess] = useState<boolean>(false);
+  const [emailError, setEmailError] = useState<string>('');
+
   const handleCalculate = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -77,6 +83,61 @@ export default function Calculator() {
       // Round to nearest 50 for simplicity
       const roundedTarget = Math.round(target / 50) * 50;
       setDeficitCalories(roundedTarget);
+    }
+  };
+
+  const handleSendEmail = async () => {
+    if (!email || !email.includes('@')) {
+      setEmailError('Please enter a valid email address');
+      return;
+    }
+
+    if (!results || !deficitCalories) {
+      setEmailError('Please complete the calculator first');
+      return;
+    }
+
+    setEmailSending(true);
+    setEmailError('');
+    setEmailSuccess(false);
+
+    try {
+      // Prepare the data to send
+      const emailData = {
+        email,
+        age,
+        gender,
+        weight: unitSystem === 'imperial' ? `${weightLbs} lbs` : `${weightKg} kg`,
+        height: unitSystem === 'imperial'
+          ? `${heightFeet}'${heightInches}"`
+          : `${heightCm} cm`,
+        activityLevel,
+        bmr: results.bmr,
+        tdee: results.tdee,
+        selectedDeficit,
+        targetCalories: deficitCalories,
+      };
+
+      const response = await fetch('/api/send-results', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(emailData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send email');
+      }
+
+      setEmailSuccess(true);
+      setEmail(''); // Clear the email field
+    } catch (error) {
+      setEmailError(error instanceof Error ? error.message : 'Failed to send email. Please try again.');
+    } finally {
+      setEmailSending(false);
     }
   };
 
@@ -422,12 +483,10 @@ export default function Calculator() {
               placeholder="180"
               style={styles.input}
               onFocus={(e) => {
-                e.target.style.borderColor = '#007aff';
-                e.target.style.boxShadow = '0 0 0 3px rgba(0, 122, 255, 0.1)';
+                e.target.style.borderColor = '#2BA5FF';
               }}
               onBlur={(e) => {
-                e.target.style.borderColor = 'rgb(209, 213, 219)';
-                e.target.style.boxShadow = 'none';
+                e.target.style.borderColor = '#383838';
               }}
             />
           </div>
@@ -445,12 +504,10 @@ export default function Calculator() {
               placeholder="82"
               style={styles.input}
               onFocus={(e) => {
-                e.target.style.borderColor = '#007aff';
-                e.target.style.boxShadow = '0 0 0 3px rgba(0, 122, 255, 0.1)';
+                e.target.style.borderColor = '#2BA5FF';
               }}
               onBlur={(e) => {
-                e.target.style.borderColor = 'rgb(209, 213, 219)';
-                e.target.style.boxShadow = 'none';
+                e.target.style.borderColor = '#383838';
               }}
             />
           </div>
@@ -473,12 +530,10 @@ export default function Calculator() {
                   placeholder="5"
                   style={styles.input}
                   onFocus={(e) => {
-                    e.target.style.borderColor = '#007aff';
-                    e.target.style.boxShadow = '0 0 0 3px rgba(0, 122, 255, 0.1)';
+                    e.target.style.borderColor = '#2BA5FF';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = 'rgb(209, 213, 219)';
-                    e.target.style.boxShadow = 'none';
+                    e.target.style.borderColor = '#383838';
                   }}
                 />
                 <label htmlFor="height-feet" style={styles.helperText}>Feet</label>
@@ -495,12 +550,10 @@ export default function Calculator() {
                   placeholder="6"
                   style={styles.input}
                   onFocus={(e) => {
-                    e.target.style.borderColor = '#007aff';
-                    e.target.style.boxShadow = '0 0 0 3px rgba(0, 122, 255, 0.1)';
+                    e.target.style.borderColor = '#2BA5FF';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = 'rgb(209, 213, 219)';
-                    e.target.style.boxShadow = 'none';
+                    e.target.style.borderColor = '#383838';
                   }}
                 />
                 <label htmlFor="height-inches" style={styles.helperText}>Inches</label>
@@ -521,12 +574,10 @@ export default function Calculator() {
               placeholder="168"
               style={styles.input}
               onFocus={(e) => {
-                e.target.style.borderColor = '#007aff';
-                e.target.style.boxShadow = '0 0 0 3px rgba(0, 122, 255, 0.1)';
+                e.target.style.borderColor = '#2BA5FF';
               }}
               onBlur={(e) => {
-                e.target.style.borderColor = 'rgb(209, 213, 219)';
-                e.target.style.boxShadow = 'none';
+                e.target.style.borderColor = '#383838';
               }}
             />
           </div>
@@ -608,12 +659,10 @@ export default function Calculator() {
                   onChange={(e) => setSelectedDeficit(e.target.value)}
                   style={styles.select}
                   onFocus={(e) => {
-                    e.target.style.borderColor = '#007aff';
-                    e.target.style.boxShadow = '0 0 0 3px rgba(0, 122, 255, 0.1)';
+                    e.target.style.borderColor = '#2BA5FF';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = 'rgb(209, 213, 219)';
-                    e.target.style.boxShadow = 'none';
+                    e.target.style.borderColor = '#383838';
                   }}
                 >
                   <option value="none">Choose an option...</option>
@@ -627,7 +676,7 @@ export default function Calculator() {
               {selectedDeficit !== 'none' && (
                 <>
                   <div style={styles.deficitDescription}>
-                    <p style={{ fontSize: '13px', color: 'rgb(55, 65, 81)', lineHeight: 1.5 }}>
+                    <p style={{ fontSize: '13px', color: '#383838', lineHeight: 1.5 }}>
                       {selectedDeficit === '15' && 'Slow burn, great for preserving muscle while burning fat'}
                       {selectedDeficit === '20' && "You want to see results faster, but don't want to be too hungry. If you have moderate body fat and want a sustainable plan, this is it."}
                       {selectedDeficit === '25' && 'If you have high body fat, but want fast results without the extreme discomfort of an aggressive deficit, choose this one'}
@@ -769,6 +818,86 @@ export default function Calculator() {
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* Step 4: Email Your Results */}
+          {deficitCalories && (
+            <div style={styles.deficitBox}>
+              <h2 style={styles.h2}>Step 4: Get Your Results via Email</h2>
+
+              <p style={styles.resultDescription}>
+                Want a printable version of your plan? Enter your email and we'll send you a PDF with all your results.
+              </p>
+
+              {!emailSuccess ? (
+                <div style={{ ...styles.form, gap: '16px', marginTop: '24px' }}>
+                  <div style={styles.fieldContainer}>
+                    <label htmlFor="email" style={styles.label}>Email Address</label>
+                    <input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="your.email@example.com"
+                      style={styles.input}
+                      disabled={emailSending}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = '#2BA5FF';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = '#383838';
+                      }}
+                    />
+                  </div>
+
+                  {emailError && (
+                    <div style={{ padding: '12px', background: '#ffebee', border: '1px solid #c62828', borderRadius: '0px' }}>
+                      <p style={{ ...styles.resultDescription, color: '#c62828', margin: 0 }}>
+                        {emailError}
+                      </p>
+                    </div>
+                  )}
+
+                  <div style={styles.deficitDescription}>
+                    <p style={{ fontSize: '13px', color: '#383838', lineHeight: 1.5, margin: 0 }}>
+                      We'll only use your email to send your results. No spam, ever. See our <a href="/privacy" style={{ color: '#2BA5FF', textDecoration: 'underline' }}>privacy policy</a>.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleSendEmail}
+                    disabled={emailSending || !email}
+                    style={{
+                      ...styles.deficitButton,
+                      opacity: emailSending || !email ? 0.5 : 1,
+                      cursor: emailSending || !email ? 'not-allowed' : 'pointer',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!emailSending && email) {
+                        e.currentTarget.style.background = '#2BA5FF';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!emailSending && email) {
+                        e.currentTarget.style.background = '#383838';
+                      }
+                    }}
+                  >
+                    {emailSending ? 'Sending...' : 'Send My Results'}
+                  </button>
+                </div>
+              ) : (
+                <div style={{ padding: '24px', background: '#e8f5e9', border: '1px solid #2e7d32', borderRadius: '0px', marginTop: '24px' }}>
+                  <h3 style={{ ...styles.h3, color: '#2e7d32', marginBottom: '12px' }}>
+                    ✓ Email Sent Successfully!
+                  </h3>
+                  <p style={{ ...styles.resultDescription, color: '#2e7d32', margin: 0 }}>
+                    Check your inbox for your personalized calorie plan PDF. Don't forget to check your spam folder if you don't see it.
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>
