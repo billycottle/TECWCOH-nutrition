@@ -153,15 +153,10 @@ export default function CoachesPage() {
           <a
             href="/"
             style={styles.ctaButton}
-            className="cta-button"
+            className="cta-link"
           >
             Try the Calculator
           </a>
-          <style jsx>{`
-            .cta-button:hover {
-              background: #2BA5FF !important;
-            }
-          `}</style>
         </div>
       </div>
     </div>

@@ -105,11 +105,6 @@ export default function EducationPage() {
           >
             Try the Calorie Calculator
           </Link>
-          <style jsx>{`
-            .cta-link:hover {
-              background: #2BA5FF !important;
-            }
-          `}</style>
         </div>
       </div>
     </div>
