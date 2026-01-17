@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
     // Send email via Resend
     const resend = getResendClient();
     const { data, error } = await resend.emails.send({
-      from: 'Nutrition Tools <onboarding@resend.dev>', // Use your verified domain in production
+      from: 'After 40 Fitness <coach@after40.fitness>',
       to: [email],
       subject: 'Your Calorie Calculator Results',
       html: `
@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
         <hr style="margin: 30px 0; border: none; border-top: 1px solid #ccc;" />
 
         <p style="font-size: 12px; color: #666;">
-          <a href="https://yourwebsite.com/privacy" style="color: #666;">Privacy Policy</a>
+          <a href="https://after40.fitness/privacy" style="color: #666;">Privacy Policy</a>
         </p>
       `,
       attachments: [
