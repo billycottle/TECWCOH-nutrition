@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { kv } from '@vercel/kv';
+import { createClient } from 'redis';
+
+// Create Redis client lazily to avoid build-time errors
+function getRedisClient() {
+  return createClient({
+    url: process.env.REDIS_URL,
+  });
+}
 
 export async function POST(request: NextRequest) {
+  let redis = null;
   try {
     const body = await request.json();
 
@@ -26,10 +34,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if KV is configured
-    if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) {
-      console.warn('Vercel KV is not configured. Lead will not be stored.');
-      // Don't fail the request - just log and return success
+    // Check if Redis is configured
+    if (!process.env.REDIS_URL) {
+      console.warn('REDIS_URL is not configured. Lead will not be stored.');
       return NextResponse.json({ success: true, stored: false });
     }
 
@@ -49,16 +56,21 @@ export async function POST(request: NextRequest) {
       },
     };
 
-    // Store in Vercel KV with email as key and timestamp
-    // Use a hash to store all leads with unique keys
-    const leadKey = `lead:${email}:${Date.now()}`;
-    await kv.set(leadKey, leadData);
+    // Connect to Redis
+    redis = getRedisClient();
+    await redis.connect();
 
-    // Also maintain a set of all lead emails for easy querying
-    await kv.sadd('leads:emails', email);
+    // Store lead with unique key
+    const leadKey = `lead:${email}:${Date.now()}`;
+    await redis.set(leadKey, JSON.stringify(leadData));
+
+    // Maintain a set of all lead emails for easy querying
+    await redis.sAdd('leads:emails', email);
 
     // Increment total leads counter
-    await kv.incr('leads:total');
+    await redis.incr('leads:total');
+
+    await redis.disconnect();
 
     return NextResponse.json({
       success: true,
@@ -68,8 +80,15 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Error storing lead:', error);
+    // Make sure to disconnect on error
+    if (redis) {
+      try {
+        await redis.disconnect();
+      } catch (e) {
+        // Ignore disconnect errors
+      }
+    }
     // Don't fail the request if lead storage fails
-    // The email was already sent successfully
     return NextResponse.json(
       { success: true, stored: false, error: 'Failed to store lead data' },
       { status: 200 }
@@ -79,8 +98,9 @@ export async function POST(request: NextRequest) {
 
 // Optional: GET endpoint to retrieve leads (for admin use)
 export async function GET(request: NextRequest) {
+  let redis = null;
   try {
-    // Check for admin authentication (you should add proper auth here)
+    // Check for admin authentication
     const authHeader = request.headers.get('authorization');
     if (!authHeader || authHeader !== `Bearer ${process.env.ADMIN_SECRET}`) {
       return NextResponse.json(
@@ -89,28 +109,41 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) {
+    if (!process.env.REDIS_URL) {
       return NextResponse.json(
-        { error: 'Vercel KV is not configured' },
+        { error: 'Redis is not configured' },
         { status: 500 }
       );
     }
 
+    // Connect to Redis
+    redis = getRedisClient();
+    await redis.connect();
+
     // Get total count
-    const total = await kv.get('leads:total') || 0;
+    const total = await redis.get('leads:total') || '0';
 
     // Get all unique emails
-    const emails = await kv.smembers('leads:emails') || [];
+    const emails = await redis.sMembers('leads:emails') || [];
+
+    await redis.disconnect();
 
     return NextResponse.json({
       success: true,
-      total,
+      total: parseInt(total, 10),
       uniqueEmails: emails.length,
       emails,
     });
 
   } catch (error) {
     console.error('Error retrieving leads:', error);
+    if (redis) {
+      try {
+        await redis.disconnect();
+      } catch (e) {
+        // Ignore disconnect errors
+      }
+    }
     return NextResponse.json(
       { error: 'Failed to retrieve leads' },
       { status: 500 }
